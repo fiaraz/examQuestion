@@ -1,4 +1,6 @@
 PAPER: AQA GCSE Physics 8463/1H June 2022 Higher Tier Paper 1
+SPEC: 8463
+SUBJECT: physics
 SOURCE: https://filestore.aqa.org.uk/sample-papers-and-mark-schemes/2022/june/AQA-84631H-QP-JUN22.PDF
 ---
 0 1 . 1 Calculate the mean power needed for 1 home given a wind farm's mean power output. [2 marks]

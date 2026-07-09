@@ -1,4 +1,6 @@
 PAPER: AQA GCSE Physics 8463/2H Specimen 2018 Higher Tier Paper 2
+SPEC: 8463
+SUBJECT: physics
 SOURCE: https://filestore.aqa.org.uk/resources/physics/AQA-84632H-SQP.PDF
 ---
 0 1 . 1 Measure the extension of a spring before and after a weight is added. [1 mark]

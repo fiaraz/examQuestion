@@ -1,0 +1,29 @@
+PAPER: AQA GCSE Combined Science Trilogy 8464/P/2H June 2022 Higher Tier Physics Paper 2
+SPEC: 8464/P
+SUBJECT: combined_science
+SOURCE: https://filestore.aqa.org.uk/sample-papers-and-mark-schemes/2022/june/AQA-8464P2H-QP-JUN22.PDF
+---
+0 1 . 1 What do labels A and B represent on a longitudinal wave diagram (compression/rarefaction)? [2 marks]
+0 1 . 2 Calculate the period of a wave given its frequency of 4.0 kHz. [4 marks]
+0 1 . 3 Write down the equation linking frequency, wavelength and wave speed. [1 mark]
+0 1 . 4 Determine the wavelength of a 300 Hz sound wave at a given air temperature, using a speed-temperature graph. [4 marks]
+0 2 . 1 Write down the equation linking distance, force and work done. [1 mark]
+0 2 . 2 Calculate the average air resistance acting on a marathon wheelchair racer, given work done against it. [3 marks]
+0 2 . 3 Which equation links distance travelled, speed and time? [1 mark]
+0 2 . 4 Calculate the average speed of a marathon winner given distance and time. [3 marks]
+0 2 . 5 Explain why the speed of a marathon competitor changes during the race. [4 marks]
+0 3 . 1 Calculate the velocity of a toy train at the bottom of a bridge given its momentum and mass. [4 marks]
+0 3 . 2 Explain why the velocity of a train is less after colliding with a stationary carriage, using momentum ideas. [4 marks]
+0 4 . 1 Explain why there is a force on a current-carrying wire in a magnetic field (the motor effect). [2 marks]
+0 4 . 2 Explain how the direction of the force on a current-carrying wire can be predicted (Fleming's left hand rule). [3 marks]
+0 4 . 3 Explain one way an electric motor could be changed to increase the rate at which the coil rotates. [2 marks]
+0 5 . 1 Explain two improvements to a method investigating how surface colour affects infrared absorption. [4 marks]
+0 5 . 2 Complete sentences about temperature difference between black and white flasks absorbing infrared radiation. [2 marks]
+0 5 . 3 How does a graph show the initial rate of infrared absorption was greater for the black flask? [1 mark]
+0 5 . 4 Explain why the temperature of water in flasks increased then became constant when absorbing infrared radiation. [4 marks]
+0 6 . 1 Determine a driver's reaction time from a thinking-distance versus speed graph. [3 marks]
+0 6 . 2 Determine the braking distance of a car from a velocity-time graph during braking. [3 marks]
+0 6 . 3 Explain how the gradient of a velocity-time graph shows the resultant force on a car was not constant. [3 marks]
+0 7 . 1 Draw two arrows showing the forces acting on a stationary hanging apple. [2 marks]
+0 7 . 2 Calculate the distance fallen by an apple in 0.50s from rest, using acceleration due to gravity. [6 marks]
+0 7 . 3 Evaluate the assumption that acceleration due to gravity is constant at 9.8 m/s2. [4 marks]

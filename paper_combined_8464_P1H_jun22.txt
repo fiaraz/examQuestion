@@ -1,0 +1,32 @@
+PAPER: AQA GCSE Combined Science Trilogy 8464/P/1H June 2022 Higher Tier Physics Paper 1
+SPEC: 8464/P
+SUBJECT: combined_science
+SOURCE: https://filestore.aqa.org.uk/sample-papers-and-mark-schemes/2022/june/AQA-8464P1H-QP-JUN22.PDF
+---
+0 1 . 1 Determine the percentage of maximum electrical demand generated using gas, from a UK energy resources chart. [3 marks]
+0 1 . 2 Which energy resources need to be used less to reduce carbon emissions (coal and gas)? [1 mark]
+0 1 . 3 What is the network of transformers and cables that transfers electrical power from power stations to consumers called (National Grid)? [1 mark]
+0 1 . 4 Explain how using step-up transformers makes the National Grid efficient. [3 marks]
+0 2 . 1 Describe how to use given equipment to determine the specific heat capacity of vegetable oil. [6 marks]
+0 2 . 2 Give one risk when using a heater and vegetable oil in a specific heat capacity experiment. [1 mark]
+0 2 . 3 Write down the equation linking energy transferred, power and time. [1 mark]
+0 2 . 4 Calculate the time taken for a 50W heater to transfer 4750J of energy. [3 marks]
+0 2 . 5 What electrical component is used to monitor the temperature of vegetable oil in a deep fryer (thermistor)? [1 mark]
+0 2 . 6 Determine the resistance of a thermistor when a heating element switches off, using resistance-temperature and temperature-time graphs. [2 marks]
+0 2 . 7 Why is water turning to steam in a deep fryer a physical change? [1 mark]
+0 3 . 1 Describe the energy store changes of a child, springs and surroundings as a trampolinist moves from maximum height to lowest position. [4 marks]
+0 3 . 2 Calculate the extension of a trampoline spring at a lower position, given elastic potential energies at two positions. [5 marks]
+0 3 . 3 What is the work done by a child on a trampoline equal to (total energy transferred)? [1 mark]
+0 4 . 1 What is 1 atmosphere (105 Pa) in kilopascals? [1 mark]
+0 4 . 2 Calculate the uncertainty in a mean pressure reading from four repeated measurements. [2 marks]
+0 4 . 3 Give a better description of the relationship between gas temperature and pressure than 'as temperature increases pressure increases'. [1 mark]
+0 4 . 4 Explain why increasing steam amount and temperature make the pressure in a pressure cooker increase. [5 marks]
+0 4 . 5 Explain how a change in density of steam is caused by a change in particle arrangement as it is released from a pressure cooker. [3 marks]
+0 5 . 1 Explain how a student should change a circuit to make an LED with 0mA current emit light. [2 marks]
+0 5 . 2 Calculate the potential difference across an LED given current and power. [5 marks]
+0 5 . 3 What happens when a xenon atom in a camera flash tube emits light (electrons fall to a lower energy level)? [1 mark]
+0 5 . 4 Calculate the mean current in a camera flash tube given potential difference, time and energy transferred. [6 marks]
+0 6 . 1 Explain why a beta radiation source in a smoke detector would be more hazardous than an alpha source. [2 marks]
+0 6 . 2 Determine the mass number and atomic number of a francium nucleus formed by alpha decay of actinium. [2 marks]
+0 6 . 3 Explain what type of nuclear radiation was emitted by a source, based on which barriers blocked it. [4 marks]
+0 6 . 4 Order four radioactive isotopes by increasing nuclear stability, using activity-time graphs, with explanation. [3 marks]

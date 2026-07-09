@@ -1,4 +1,6 @@
 PAPER: AQA GCSE Physics 8463/1H June 2023 Higher Tier Paper 1
+SPEC: 8463
+SUBJECT: physics
 SOURCE: https://filestore.aqa.org.uk/sample-papers-and-mark-schemes/2023/june/AQA-84631H-QP-JUN23.PDF
 ---
 0 1 . 1 Complete the sentences. Transformer X causes the potential difference to ___. Transformer X causes the current to ___. [2 marks]
