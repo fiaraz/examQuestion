@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GCSE Question Search (prototype)</title>
+<style>
+  :root { --bg:#faf9f7; --card:#fff; --ink:#1d1d1f; --muted:#6b6b70; --accent:#b34700; --border:#e4e1db; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, Segoe UI, Helvetica, Arial, sans-serif; background:var(--bg); color:var(--ink); margin:0; padding:32px 16px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 1.4rem; margin-bottom:4px; }
+  p.sub { color: var(--muted); margin-top:0; font-size:0.92rem; }
+  .controls { display:flex; gap:10px; margin: 20px 0 8px; flex-wrap: wrap; }
+  select, input[type=text] { font-size:1rem; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:#fff; }
+  select { min-width:150px; }
+  input[type=text] { flex:1; min-width:220px; }
+  button { font-size:1rem; padding:10px 18px; border:none; border-radius:8px; background:var(--accent); color:#fff; cursor:pointer; }
+  button:hover { opacity:0.9; }
+  .note { font-size:0.85rem; color:var(--muted); margin-bottom:20px; }
+  .result { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-bottom:10px; }
+  .result .meta { font-size:0.8rem; color:var(--muted); margin-bottom:4px; }
+  .result .qtext { font-size:0.97rem; line-height:1.4; }
+  .badge { display:inline-block; font-size:0.72rem; padding:2px 7px; border-radius:999px; margin-left:6px; }
+  .badge.literal { background:#e6f4ea; color:#256029; }
+  .badge.expanded { background:#fdecd2; color:#8a5300; }
+  .empty { color: var(--muted); padding: 20px 0; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>GCSE Question Search — prototype</h1>
+  <p class="sub">Searches real AQA GCSE Physics past-paper questions for a topic. Chemistry/Biology are wired up but have no indexed papers yet.</p>
+
+  <div class="controls">
+    <select id="subject">
+      <option value="physics">Physics</option>
+      <option value="chemistry">Chemistry</option>
+      <option value="biology">Biology</option>
+    </select>
+    <input id="topic" type="text" placeholder="e.g. Fleming's left hand rule" value="Fleming's left hand rule">
+    <button onclick="runSearch()">Search</button>
+  </div>
+  <div class="note">Data: 3 real AQA GCSE Physics papers (June 2022, June 2023, 2018 specimen), text pulled from AQA's own published PDFs. This is a small demo corpus, not the full past-paper archive.</div>
+
+  <div id="results"></div>
+</div>
+
+<script>
+// --- Demo corpus: questions extracted from real AQA GCSE Physics papers ---
+const PAPERS = {
+  physics: [{"title": "AQA GCSE Physics 8463/1H June 2022 Higher Tier Paper 1", "source": "https://filestore.aqa.org.uk/sample-papers-and-mark-schemes/2022/june/AQA-84631H-QP-JUN22.PDF", "questions": [{"ref": "01.1", "text": "Calculate the mean power needed for 1 home given a wind farm's mean power output. [2 marks]"}, {"ref": "01.2", "text": "Suggest two reasons why wind power was not able to meet UK electricity demand. [2 marks]"}, {"ref": "01.3", "text": "Explain how oiling the mechanical parts of a wind turbine would affect its efficiency. [3 marks]"}, {"ref": "01.4", "text": "Explain why people should be encouraged to use energy efficient electrical devices. [2 marks]"}, {"ref": "02.1", "text": "Describe a method the student could use to determine the density of a rock. [6 marks]"}, {"ref": "02.2", "text": "Calculate the maximum and minimum values for the density of the rock. [1 mark]"}, {"ref": "02.3", "text": "Which two types of rock could be the type of rock the student had, based on density ranges? [1 mark]"}, {"ref": "02.4", "text": "Explain why taking the measurements more than once may improve the accuracy of the density value. [2 marks]"}, {"ref": "03.1", "text": "What equation links current (I), potential difference (V) and power (P)? [1 mark]"}, {"ref": "03.2", "text": "Calculate the current in a pavement tile given potential difference and power output. [3 marks]"}, {"ref": "03.3", "text": "What equation links efficiency, total power input and useful power output? [1 mark]"}, {"ref": "03.4", "text": "Calculate the useful power output of an LED light given total power input and efficiency. [3 marks]"}, {"ref": "04.1", "text": "Identify the independent variable and the dependent variable in an insulating materials investigation. [2 marks]"}, {"ref": "04.2", "text": "What is the resolution of thermometer B? [1 mark]"}, {"ref": "04.3", "text": "Thermometer A is more likely to be misread. Give one reason why. [1 mark]"}, {"ref": "04.4", "text": "Calculate the mass of water in the can given specific heat capacity and energy transferred. [3 marks]"}, {"ref": "04.5", "text": "Explain how the results can be used to compare the thermal conductivity of two materials. [2 marks]"}, {"ref": "05.1", "text": "Explain why the cloth became positively charged after rubbing a plastic rod. [3 marks]"}, {"ref": "05.2", "text": "Explain why the reading on the balance increases when a charged rod is held above another charged rod. [3 marks]"}, {"ref": "05.3", "text": "The balance had a zero error. Give the reason why the zero error is not important in this experiment. [1 mark]"}, {"ref": "05.4", "text": "Explain why a spark jumps between a negatively charged rod and an earthed conductor. [3 marks]"}, {"ref": "06.1", "text": "Explain why transformer X is used in the National Grid (step-up transformer). [4 marks]"}, {"ref": "06.2", "text": "Explain why transformer Y is used in the National Grid (step-down transformer). [2 marks]"}, {"ref": "06.3", "text": "Calculate the charge flow to a town given energy transferred and potential difference. [4 marks]"}, {"ref": "07.1", "text": "What does an alpha particle consist of? [1 mark]"}, {"ref": "07.2", "text": "Complete the nuclear equation for beta decay of krypton into rubidium. [2 marks]"}, {"ref": "07.3", "text": "Explain how the risk from internal contamination is different to the risk from external irradiation by an alpha source. [5 marks]"}, {"ref": "08.1", "text": "What measuring instrument should be used to measure the volume of water? [1 mark]"}, {"ref": "08.2", "text": "What is a hazard in the student's investigation into specific latent heat of vaporisation? [1 mark]"}, {"ref": "08.3", "text": "Calculate the specific latent heat of vaporisation of water given mass and energy data. [5 marks]"}, {"ref": "08.4", "text": "Explain how heat lost to surroundings affected the specific latent heat of vaporisation value. [2 marks]"}, {"ref": "08.5", "text": "Explain how water evaporating before reaching 100C affected the specific latent heat value. [2 marks]"}, {"ref": "09.1", "text": "Calculate the power output of a girl running up stairs given mass, height and time. [5 marks]"}, {"ref": "09.2", "text": "Suggest two reasons why the girl's total power output was greater than the calculated answer. [2 marks]"}, {"ref": "09.3", "text": "What conclusion can be made about a boy's mass given equal power output but longer time? [1 mark]"}, {"ref": "10.1", "text": "Calculate the maximum speed of a toy aeroplane launched by a stretched spring. [6 marks]"}, {"ref": "10.2", "text": "Complete the sentence about decrease in kinetic/elastic energy as the aeroplane moves upward. [1 mark]"}, {"ref": "10.3", "text": "Give one factor which would increase the horizontal distance the toy aeroplane travels. [1 mark]"}, {"ref": "11.1", "text": "Draw the circuit symbol for an LED. [1 mark]"}, {"ref": "11.2", "text": "Why do the hair straighteners not turn on when only switch S2 is closed? [1 mark]"}, {"ref": "11.3", "text": "Calculate the time taken for hair straighteners to reach operating temperature at maximum power. [4 marks]"}, {"ref": "11.4", "text": "Explain what happens to the power output of the power supply when switches S2 and S3 are closed together. [3 marks]"}]}, {"title": "AQA GCSE Physics 8463/1H June 2023 Higher Tier Paper 1", "source": "https://filestore.aqa.org.uk/sample-papers-and-mark-schemes/2023/june/AQA-84631H-QP-JUN23.PDF", "questions": [{"ref": "01.1", "text": "Complete the sentences. Transformer X causes the potential difference to ___. Transformer X causes the current to ___. [2 marks]"}, {"ref": "01.2", "text": "Which equation links current (I), power (P) and resistance (R)? Tick one box. [1 mark]"}, {"ref": "01.3", "text": "A transmission cable has a power loss of 1.60x10^9 W. The current in the cable is 2000 A. Calculate the resistance of the cable. [3 marks]"}, {"ref": "01.4", "text": "Write down the equation which links efficiency, total energy input and useful energy output. [1 mark]"}, {"ref": "01.5", "text": "The total energy input to the National Grid from one power station is 34.2 GJ. The National Grid has an efficiency of 0.992. Calculate the useful energy output. [3 marks]"}, {"ref": "02.1", "text": "Before the power supply was switched on, the thermometer was used to measure the temperature of the iron block. The student left the thermometer in the iron block for a few minutes before recording the initial temperature. Suggest why. [1 mark]"}, {"ref": "02.2", "text": "Calculate the specific heat capacity of iron using energy transferred and mass. [4 marks]"}, {"ref": "02.3", "text": "The student repeated the investigation but wrapped insulation around the iron block. What effect will adding insulation have had on the investigation? Tick two boxes. [2 marks]"}, {"ref": "03.1", "text": "The 12V battery supplies direct potential difference. What is meant by 'direct potential difference'? [1 mark]"}, {"ref": "03.2", "text": "Which equation links charge flow (Q), energy (E) and potential difference (V)? [1 mark]"}, {"ref": "03.3", "text": "Calculate the charge flow through the 12V battery when the battery transfers 5010 J of energy. [3 marks]"}, {"ref": "03.4", "text": "Ice forms on the windscreen. Calculate the specific latent heat of fusion of water. [3 marks]"}, {"ref": "03.5", "text": "Explain the changes in the arrangement and movement of the particles as the ice melted and the temperature increased to 5C. [6 marks]"}, {"ref": "04.1", "text": "Calculate the mean change in vertical height of water moving through a hydroelectric generator. [4 marks]"}, {"ref": "04.2", "text": "Calculate the time taken for the generator to transfer 2.16x10^7 J of energy. [5 marks]"}, {"ref": "04.3", "text": "Explain why adding a solar power system improves the reliability of the electricity supply to the village. [2 marks]"}, {"ref": "05.1", "text": "Compare the structure of an atom of carbon-14 with the structure of an atom of carbon-12. [3 marks]"}, {"ref": "05.2", "text": "Carbon-14 has a half-life of 5700 years. What does 'a half-life of 5700 years' mean? [1 mark]"}, {"ref": "05.3", "text": "A sample of fluorine-17 has an activity that is one quarter of its original activity. Calculate the age of the sample. [2 marks]"}, {"ref": "05.4", "text": "Explain which isotope would cause the biggest risk to a person's health based only on the half-life of each isotope. [3 marks]"}, {"ref": "05.5", "text": "Describe the difference between irradiation and contamination. [2 marks]"}, {"ref": "05.6", "text": "Give one health risk to a person working close to a source of nuclear radiation. [1 mark]"}, {"ref": "05.7", "text": "Explain why the worker needs to stand close to the radiation detector. [2 marks]"}, {"ref": "05.8", "text": "Calculate the number of days it takes for a nuclear power station worker to receive the same dose as a pilot flying for 24 hours. [3 marks]"}, {"ref": "06.1", "text": "Describe a method the student could use to obtain current-potential difference results for a filament lamp, including a circuit diagram. [6 marks]"}, {"ref": "06.2", "text": "Determine the resistance of the filament lamp when the potential difference across it is +3.0V. [3 marks]"}, {"ref": "06.3", "text": "Calculate the energy transferred by the filament lamp in 30 minutes. [5 marks]"}, {"ref": "06.4", "text": "Explain why the student's prediction that power output would double is not correct. [2 marks]"}, {"ref": "07.1", "text": "The baby bouncer should not be used with babies that have a mass greater than 12kg. Suggest one reason why. [1 mark]"}, {"ref": "07.2", "text": "Describe the energy transfers as the baby moves from position A to position B in the baby bouncer. [3 marks]"}, {"ref": "07.3", "text": "Calculate the spring constant of the spring given extension and elastic potential energy. [4 marks]"}, {"ref": "08.1", "text": "Draw one line from each particle (electron, neutron, nucleus, proton) to the year it was discovered. [2 marks]"}, {"ref": "08.2", "text": "Explain why alpha particle A takes the path shown in the gold foil scattering experiment. [2 marks]"}, {"ref": "08.3", "text": "Explain why the path of alpha particle B is more tightly curved than the path of alpha particle C. [2 marks]"}, {"ref": "08.4", "text": "What can be deduced about the atom from the paths taken by alpha particles D, E, F and G? [1 mark]"}, {"ref": "08.5", "text": "How is the Bohr model of the atom different from the nuclear model of the atom? [1 mark]"}, {"ref": "08.6", "text": "Explain how an electron can move up and down between energy levels in an atom. [2 marks]"}, {"ref": "09.1", "text": "Complete the sentence about air particles in a tyre moving quickly in random directions. [1 mark]"}, {"ref": "09.2", "text": "Explain why the pressure increases as more air is pumped into the tyre at constant volume and temperature. [2 marks]"}, {"ref": "09.3", "text": "Explain why air pressure in a car tyre changes if the temperature of the air increases. [4 marks]"}]}, {"title": "AQA GCSE Physics 8463/2H Specimen 2018 Higher Tier Paper 2", "source": "https://filestore.aqa.org.uk/resources/physics/AQA-84632H-SQP.PDF", "questions": [{"ref": "01.1", "text": "Measure the extension of a spring before and after a weight is added. [1 mark]"}, {"ref": "01.2", "text": "Explain why adjusting the ruler to be vertical was important. [2 marks]"}, {"ref": "01.3", "text": "What range of weight did the student use? [1 mark]"}, {"ref": "01.4", "text": "Why does the data support the prediction that extension is directly proportional to weight? [1 mark]"}, {"ref": "01.5", "text": "Describe one technique to improve the accuracy of the spring extension measurements. [2 marks]"}, {"ref": "01.6", "text": "What can be concluded about the deformation of the spring after all weights were removed? [2 marks]"}, {"ref": "02.1", "text": "Hubble observed that light from receding galaxies had longer wavelengths than expected. What name is given to this effect (redshift)? [1 mark]"}, {"ref": "02.2", "text": "What relationship between the speed of a galaxy and its distance is suggested by Hubble's results? [1 mark]"}, {"ref": "02.3", "text": "Give one strength and one weakness of the inflating balloon model of an expanding universe. [2 marks]"}, {"ref": "02.4", "text": "In what way do Hubble's observations support both the steady state theory and the Big Bang theory? [1 mark]"}, {"ref": "02.5", "text": "Suggest what caused scientists to start thinking the steady state theory was wrong. [1 mark]"}, {"ref": "03.1", "text": "Explain why the image height in centimetres was the same as the magnification of a convex lens. [2 marks]"}, {"ref": "03.2", "text": "Suggest one change so accurate magnification values could be obtained for distances greater than 60cm. [1 mark]"}, {"ref": "03.3", "text": "Complete the graph by plotting missing magnification data and drawing a line of best fit. [2 marks]"}, {"ref": "03.4", "text": "How many times bigger is the image at 35cm compared to 55cm from the lens? [2 marks]"}, {"ref": "03.5", "text": "Give a second way the student could have determined the magnification, justified with a calculation. [2 marks]"}, {"ref": "03.6", "text": "Complete the ray diagram to show how a convex lens produces the image of a close object. [3 marks]"}, {"ref": "04.1", "text": "Describe how you could show that a magnetic field has been produced around a current-carrying wire. [2 marks]"}, {"ref": "04.2", "text": "Explain how the ignition circuit with an electromagnetic switch works to start a car. [4 marks]"}, {"ref": "05.1", "text": "Describe an investigation to obtain angle of incidence/refraction data at an air-glass boundary, considering inaccuracy. [6 marks]"}, {"ref": "05.2", "text": "State the reason why light is refracted as it crosses from air into glass. [1 mark]"}, {"ref": "06.1", "text": "Why is iron a suitable material for the core of a transformer? [1 mark]"}, {"ref": "06.2", "text": "How can you tell that transformer J is a step-down transformer from the potential difference graph? [1 mark]"}, {"ref": "06.3", "text": "Calculate the number of turns on the secondary coil of transformer L. [3 marks]"}, {"ref": "07.1", "text": "Suggest why most other scientists thought CERN's faster-than-light neutrino results were unbelievable. [1 mark]"}, {"ref": "07.2", "text": "Suggest two reasons why scientists decided to publish results they could not explain. [2 marks]"}, {"ref": "07.3", "text": "Calculate the time for neutrinos to travel 730000m at a given speed, in standard form. [3 marks]"}, {"ref": "07.4", "text": "Which is the same as 60 nanoseconds? [1 mark]"}, {"ref": "07.5", "text": "What name is given to the type of error made by the scientists (systematic error)? [1 mark]"}, {"ref": "07.6", "text": "Suggest what the scientists should do to calculate an accurate value for the speed of a neutrino. [1 mark]"}, {"ref": "08.1", "text": "What is the difference between distance and displacement for a train journey? [1 mark]"}, {"ref": "08.2", "text": "Use the scale diagram to determine the displacement of the train travelling from A to B. [2 marks]"}, {"ref": "08.3", "text": "Explain how a train can accelerate without changing speed (changing direction). [2 marks]"}, {"ref": "08.4", "text": "Estimate the distance travelled by the train using a velocity-time graph. [3 marks]"}, {"ref": "09.1", "text": "What is meant by the braking distance of a vehicle? [1 mark]"}, {"ref": "09.2", "text": "Explain why the stopping distance of a car increases if the driver is very tired. [2 marks]"}, {"ref": "09.3", "text": "Explain whether a student is correct that thinking distance and braking distance are both proportional to speed. [2 marks]"}, {"ref": "09.4", "text": "Why is it important that a friction sled is pulled at a constant speed? [1 mark]"}, {"ref": "09.5", "text": "Explain why pulling a friction sled at an angle to the surface would give an inappropriate friction constant. [2 marks]"}, {"ref": "09.6", "text": "Calculate the speed of a car just before the brakes were applied given deceleration and stopping distance. [3 marks]"}, {"ref": "10.1", "text": "Explain why atmospheric pressure decreases with increasing altitude. [3 marks]"}, {"ref": "10.2", "text": "Calculate the resultant force on an aircraft window given cabin pressure difference and altitude. [5 marks]"}, {"ref": "10.3", "text": "Explain why an aircraft window has been designed with a particular cross-section shape. [2 marks]"}, {"ref": "11.1", "text": "Describe the difference between a longitudinal and a transverse wave. [2 marks]"}, {"ref": "11.2", "text": "Describe one piece of evidence that it is the sound wave, not the air itself, that travels. [1 mark]"}, {"ref": "11.3", "text": "Explain how a moving-coil loudspeaker converts current in a circuit to a sound wave, using the motor effect on a coil in a magnetic field. [6 marks]"}, {"ref": "12.1", "text": "In a current balance, wire X carrying a current in a magnetic field experiences a force and moves downwards. What is the name of the effect that causes wire X to move downwards? [1 mark]"}, {"ref": "12.2", "text": "Suggest one change to the current balance apparatus that would increase the size of the force wire X experiences (increase current, or use a stronger magnet). [1 mark]"}, {"ref": "12.3", "text": "Calculate the magnetic flux density where wire X is positioned, given current, length and moment. Give the unit (tesla). [6 marks]"}]}]
+};
+
+// Small curated topic -> exam-phrasing synonym map.
+// This is the part that actually matters: exam questions almost never use
+// the textbook name of a rule/law, so literal search alone misses most hits.
+const SYNONYMS = {
+  "fleming's left hand rule": ["motor effect", "force on a current-carrying conductor", "force on a current carrying wire", "wire in a magnetic field", "magnetic flux density", "current balance"],
+  "fleming's right hand rule": ["generator effect", "electromagnetic induction", "induced potential difference"],
+  "specific heat capacity": ["specific heat capacity"],
+  "specific latent heat": ["specific latent heat", "latent heat of vaporisation", "latent heat of fusion"],
+  "half-life": ["half-life", "radioactive decay", "activity"],
+  "national grid": ["national grid", "transformer", "step-up transformer", "step-down transformer"]
+};
+
+function runSearch() {
+  const subject = document.getElementById('subject').value;
+  const queryRaw = document.getElementById('topic').value.trim();
+  const query = queryRaw.toLowerCase();
+  const resultsEl = document.getElementById('results');
+  resultsEl.innerHTML = '';
+
+  const papers = PAPERS[subject] || [];
+  if (!papers.length) {
+    resultsEl.innerHTML = `<div class="empty">No papers indexed yet for ${subject}. This prototype only has Physics data loaded — the same approach (download past papers, extract text, index, search) applies to Chemistry and Biology once their papers are added.</div>`;
+    return;
+  }
+  if (!query) return;
+
+  const terms = SYNONYMS[query] || [query];
+  const literalHits = [];
+  const expandedHits = [];
+
+  papers.forEach(paper => {
+    paper.questions.forEach(q => {
+      const textL = q.text.toLowerCase();
+      if (textL.includes(query)) {
+        literalHits.push({ paper, q, term: query, kind: 'literal' });
+      } else {
+        for (const term of terms) {
+          if (textL.includes(term)) {
+            expandedHits.push({ paper, q, term, kind: 'expanded' });
+            break;
+          }
+        }
+      }
+    });
+  });
+
+  const all = literalHits.concat(expandedHits);
+  if (!all.length) {
+    resultsEl.innerHTML = `<div class="empty">No matches for "${queryRaw}" in the indexed papers.</div>`;
+    return;
+  }
+
+  resultsEl.innerHTML = all.map(hit => `
+    <div class="result">
+      <div class="meta">${hit.paper.title} — Q${hit.q.ref}
+        <span class="badge ${hit.kind}">${hit.kind === 'literal' ? 'exact phrase' : 'matched via "' + hit.term + '"'}</span>
+      </div>
+      <div class="qtext">${hit.q.text}</div>
+    </div>
+  `).join('');
+}
+
+window.onload = runSearch;
+</script>
+</body>
+</html>
