@@ -46,8 +46,13 @@
   #printArea h2 { font-size:1.1rem; border-top:2px solid var(--ink); padding-top:14px; margin-top:28px; }
   #printArea .pq { margin-bottom:18px; }
   #printArea .pq .meta { font-size:0.85rem; color:var(--muted); margin-bottom:6px; }
-  #printArea .ppart { margin-bottom:8px; }
+  #printArea .ppart { margin-bottom:8px; page-break-inside: avoid; }
   #printArea .ppart .ref { font-weight:600; margin-right:6px; }
+  #printArea .answer-space {
+    margin: 8px 0 18px;
+    background-image: repeating-linear-gradient(to bottom, transparent, transparent 27px, #bbb 28px);
+    border-bottom: 1px solid #bbb;
+  }
   #printArea .msa { margin-bottom:12px; font-size:0.92rem; }
   #printArea .msa .ref { font-weight:600; }
   #printArea .qtable { border-collapse:collapse; margin-top:6px; font-size:0.85rem; }
@@ -233,10 +238,14 @@ function exportPDF() {
             rows.map(row => `<tr>${row.map(cell => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`).join('')
           }</tbody></table>`).join('')
         : '';
+      const marksMatch = part.text.match(/\[(\d+)\s*marks?\]/i);
+      const marks = marksMatch ? Math.max(1, parseInt(marksMatch[1], 10)) : 2;
+      const spaceHeight = Math.min(280, 28 * Math.min(marks, 8) + 20);
       return `<div class="ppart">
         <span class="ref">Q${part.ref}</span><span class="qtext">${part.text}</span>
         ${imagesHtml}
         ${tablesHtml}
+        <div class="answer-space" style="height:${spaceHeight}px;"></div>
       </div>`;
     }).join('');
     return `<div class="pq">
