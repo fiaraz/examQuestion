@@ -40,6 +40,25 @@
   .qtable tr:first-child td { background:#f3f1ec; font-weight:600; }
   .empty { color: var(--muted); padding: 20px 0; }
   a { color: var(--accent); }
+  button.secondary { background:#fff; color:var(--accent); border:1px solid var(--accent); }
+  #printArea { display:none; }
+  #printArea h1 { font-size:1.3rem; }
+  #printArea h2 { font-size:1.1rem; border-top:2px solid var(--ink); padding-top:14px; margin-top:28px; }
+  #printArea .pq { margin-bottom:18px; }
+  #printArea .pq .meta { font-size:0.85rem; color:var(--muted); margin-bottom:6px; }
+  #printArea .ppart { margin-bottom:8px; }
+  #printArea .ppart .ref { font-weight:600; margin-right:6px; }
+  #printArea .msa { margin-bottom:12px; font-size:0.92rem; }
+  #printArea .msa .ref { font-weight:600; }
+  #printArea .qtable { border-collapse:collapse; margin-top:6px; font-size:0.85rem; }
+  #printArea .qtable td { border:1px solid #999; padding:3px 7px; }
+  #printArea .figs img { max-width:260px; max-height:220px; margin-top:6px; }
+  .page-break { page-break-before: always; }
+  @media print {
+    body * { visibility: hidden; }
+    #printArea, #printArea * { visibility: visible; }
+    #printArea { display:block; position:absolute; left:0; top:0; width:100%; }
+  }
 </style>
 </head>
 <body>
@@ -56,12 +75,14 @@
     </select>
     <input id="topic" type="text" placeholder="e.g. osmosis" value="osmosis">
     <button onclick="runSearch()">Search</button>
+    <button class="secondary" onclick="exportPDF()">Export as PDF (questions + mark scheme)</button>
   </div>
   <div class="note" id="corpusNote"></div>
   <div class="note">Diagrams are cropped straight from the original PDF where one was found for that part. If no image shows but a part mentions a Figure/Table, use "view original PDF" to see it.</div>
 
   <div id="results"></div>
 </div>
+<div id="printArea"></div>
 
 <script>
 // INDEX: { subject: [ { title, code, session, source, has_mark_scheme, groups: [ { parent, parts: [{ref, text, has_figure, ms_answer, images}] } ] } ] }
@@ -113,11 +134,16 @@ function findMatches(query, papers) {
   return hits;
 }
 
+let lastResults = [];
+let lastMeta = { subject: '', query: '' };
+
 function runSearch() {
   const subject = document.getElementById('subject').value;
   const queryRaw = document.getElementById('topic').value.trim();
   const resultsEl = document.getElementById('results');
   resultsEl.innerHTML = '';
+  lastResults = [];
+  lastMeta = { subject, query: queryRaw };
 
   const papers = INDEX[subject] || [];
   const totalParts = papers.reduce((n,p)=>n+p.groups.reduce((m,g)=>m+g.parts.length,0),0);
@@ -145,8 +171,9 @@ function runSearch() {
     }
     seen.get(key).matchedRefs.set(h.part.ref, { term: h.term, kind: h.kind });
   });
+  lastResults = Array.from(seen.values()).slice(0, 60);
 
-  const cards = Array.from(seen.values()).slice(0, 60).map(({ paper, group, matchedRefs }) => {
+  const cards = lastResults.map(({ paper, group, matchedRefs }) => {
     const partsHtml = group.parts.map(part => {
       const matched = matchedRefs.get(part.ref);
       const figureBadge = part.has_figure ? `<span class="badge figure">mentions a diagram</span>` : '';
@@ -186,6 +213,63 @@ function runSearch() {
 
   const overflowNote = seen.size > 60 ? `<div class="note">Showing first 60 of ${seen.size} matching questions.</div>` : '';
   resultsEl.innerHTML = cards.join('') + overflowNote;
+}
+
+function exportPDF() {
+  if (!lastResults.length) {
+    alert('Run a search with at least one match first, then export.');
+    return;
+  }
+  const escapeHtml = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const printArea = document.getElementById('printArea');
+
+  const questionBlocks = lastResults.map(({ paper, group, matchedRefs }) => {
+    const partsHtml = group.parts.map(part => {
+      const imagesHtml = (part.images && part.images.length)
+        ? `<div class="figs">${part.images.map(src => `<img src="${encodeURI(src)}" alt="Figure for Q${part.ref}">`).join('')}</div>`
+        : '';
+      const tablesHtml = (part.tables && part.tables.length)
+        ? part.tables.map(rows => `<table class="qtable"><tbody>${
+            rows.map(row => `<tr>${row.map(cell => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`).join('')
+          }</tbody></table>`).join('')
+        : '';
+      return `<div class="ppart">
+        <span class="ref">Q${part.ref}</span><span class="qtext">${part.text}</span>
+        ${imagesHtml}
+        ${tablesHtml}
+      </div>`;
+    }).join('');
+    return `<div class="pq">
+      <div class="meta">${paper.title} — Question ${group.parent}</div>
+      ${partsHtml}
+    </div>`;
+  }).join('');
+
+  const msBlocks = lastResults.map(({ paper, group, matchedRefs }) => {
+    const answered = group.parts.filter(part => part.ms_answer);
+    if (!answered.length) return '';
+    const rows = answered.map(part =>
+      `<div class="msa"><span class="ref">Q${part.ref}</span> ${part.ms_answer}</div>`
+    ).join('');
+    return `<div class="pq">
+      <div class="meta">${paper.title} — Question ${group.parent}</div>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  const subjectLabel = SUBJECT_LABELS[lastMeta.subject] || lastMeta.subject;
+  const today = new Date().toLocaleDateString('en-GB');
+
+  printArea.innerHTML = `
+    <h1>AQA GCSE Question Search — ${escapeHtml(subjectLabel)}</h1>
+    <div class="meta">Topic: "${escapeHtml(lastMeta.query)}" — generated ${today}</div>
+    ${questionBlocks}
+    <div class="page-break"></div>
+    <h2>Mark Scheme Answers</h2>
+    ${msBlocks || '<div class="meta">No mark scheme answers available for these matches.</div>'}
+  `;
+
+  window.print();
 }
 
 window.onload = runSearch;
