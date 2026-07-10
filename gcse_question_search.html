@@ -2,45 +2,152 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AQA GCSE Question Search</title>
 <style>
-  :root { --bg:#faf9f7; --card:#fff; --ink:#1d1d1f; --muted:#6b6b70; --accent:#b34700; --border:#e4e1db; --highlight:#fff3cd; --ms-bg:#eef7ee; --ms-border:#bfe0bf; }
+  :root {
+    --bg:#f4f5fa; --bg-2:#e9ebf5; --card:#ffffff; --card-2:#f8f9fd;
+    --ink:#14162b; --muted:#686e85; --border:#e4e6f0;
+    --accent:#6366f1; --accent-2:#8b5cf6; --accent-ink:#ffffff;
+    --highlight:#fef08a; --highlight-ink:#713f12;
+    --ms-bg:#ecfdf5; --ms-border:#a7f3d0; --ms-ink:#047857;
+    --shadow:0 1px 2px rgba(20,22,43,.04), 0 8px 24px rgba(20,22,43,.06);
+    --shadow-lg:0 12px 32px rgba(20,22,43,.12);
+    --radius:16px;
+    --sub-physics:#3b82f6; --sub-chemistry:#f59e0b; --sub-biology:#10b981; --sub-combined_science:#8b5cf6;
+  }
+  html[data-theme="dark"] {
+    --bg:#0e0f1a; --bg-2:#14162b; --card:#181a2b; --card-2:#1f2137;
+    --ink:#e9eaf5; --muted:#9aa0b8; --border:#2a2d47;
+    --accent:#818cf8; --accent-2:#a78bfa; --accent-ink:#0e0f1a;
+    --highlight:rgba(250,204,21,.28); --highlight-ink:#fde68a;
+    --ms-bg:rgba(16,185,129,.12); --ms-border:rgba(16,185,129,.35); --ms-ink:#34d399;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    --shadow-lg:0 16px 40px rgba(0,0,0,.5);
+  }
   * { box-sizing: border-box; }
-  body { font-family: -apple-system, Segoe UI, Helvetica, Arial, sans-serif; background:var(--bg); color:var(--ink); margin:0; padding:32px 16px; }
-  .wrap { max-width: 860px; margin: 0 auto; }
-  h1 { font-size: 1.4rem; margin-bottom:4px; }
-  p.sub { color: var(--muted); margin-top:0; font-size:0.92rem; }
-  .controls { display:flex; gap:10px; margin: 20px 0 8px; flex-wrap: wrap; }
-  select, input[type=text] { font-size:1rem; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:#fff; }
-  select { min-width:220px; }
-  input[type=text] { flex:1; min-width:220px; }
-  button { font-size:1rem; padding:10px 18px; border:none; border-radius:8px; background:var(--accent); color:#fff; cursor:pointer; }
-  button:hover { opacity:0.9; }
-  .note { font-size:0.85rem; color:var(--muted); margin-bottom:14px; }
-  .result { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-bottom:12px; }
-  .result .meta { font-size:0.8rem; color:var(--muted); margin-bottom:8px; }
-  .result .meta a { color: var(--accent); }
-  .part { font-size:0.97rem; line-height:1.45; padding:8px 0; border-top:1px dashed var(--border); }
-  .part:first-of-type { border-top:none; }
-  .part.matched > .qtext { background: var(--highlight); border-radius:6px; padding:6px 8px; margin: 0 -8px; display:inline-block; }
-  .part .ref { font-weight:600; margin-right:6px; }
-  .badge { display:inline-block; font-size:0.72rem; padding:2px 7px; border-radius:999px; margin-left:6px; }
-  .badge.literal { background:#e6f4ea; color:#256029; }
-  .badge.expanded { background:#fdecd2; color:#8a5300; }
-  .badge.figure { background:#e3ecfb; color:#1d4c8a; }
-  .ms { background: var(--ms-bg); border:1px solid var(--ms-border); border-radius:6px; padding:8px 10px; margin-top:6px; font-size:0.9rem; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(1100px 500px at 10% -10%, color-mix(in srgb, var(--accent) 12%, transparent), transparent),
+      radial-gradient(900px 500px at 100% 0%, color-mix(in srgb, var(--accent-2) 10%, transparent), transparent),
+      var(--bg);
+    background-attachment: fixed;
+    color:var(--ink); margin:0; padding:40px 18px 80px;
+    transition: background-color .25s ease, color .25s ease;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  .topbar { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:22px; }
+  .titleblock h1 {
+    font-size: 2rem; margin:0 0 6px; letter-spacing:-0.02em; font-weight:800;
+    background: linear-gradient(135deg, var(--ink), var(--accent) 120%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  p.sub { color: var(--muted); margin:0; font-size:0.95rem; max-width:56ch; line-height:1.5; }
+  .theme-toggle {
+    width:42px; height:42px; border-radius:50%; border:1px solid var(--border);
+    background:var(--card); color:var(--ink); font-size:1.1rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow);
+    flex-shrink:0; transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .theme-toggle:hover { transform: translateY(-2px); box-shadow:var(--shadow-lg); }
+
+  .panel {
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:16px; margin-bottom:18px;
+  }
+  .controls { display:flex; gap:10px; flex-wrap: wrap; align-items:center; }
+  .select-wrap { position:relative; }
+  select {
+    appearance:none; -webkit-appearance:none; font-size:0.95rem; font-weight:600;
+    padding:12px 38px 12px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card-2); color:var(--ink); min-width:230px; cursor:pointer;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23686e85'><path d='M5.5 7.5l4.5 4.5 4.5-4.5' stroke='%23686e85' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat:no-repeat; background-position: right 12px center; background-size:16px;
+    transition: border-color .15s ease;
+  }
+  select:focus, input[type=text]:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+  .search-wrap { position:relative; flex:1; min-width:240px; }
+  .search-wrap::before {
+    content:"🔎"; position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    font-size:0.95rem; opacity:0.6; pointer-events:none;
+  }
+  input[type=text] {
+    width:100%; font-size:0.95rem; padding:12px 14px 12px 38px; border:1px solid var(--border);
+    border-radius:12px; background:var(--card-2); color:var(--ink);
+  }
+  button {
+    font-size:0.95rem; font-weight:600; padding:12px 20px; border:none; border-radius:12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color:var(--accent-ink); cursor:pointer; box-shadow:var(--shadow);
+    transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+  }
+  button:hover { transform: translateY(-1px); box-shadow:var(--shadow-lg); }
+  button:active { transform: translateY(0); }
+  button.secondary {
+    background:var(--card-2); color:var(--ink); border:1px solid var(--border); box-shadow:none;
+  }
+  button.secondary:hover { border-color:var(--accent); color:var(--accent); }
+
+  .note { font-size:0.83rem; color:var(--muted); }
+  .stat-row { display:flex; flex-wrap:wrap; gap:8px 18px; margin-top:6px; }
+
+  #results { display:flex; flex-direction:column; gap:14px; margin-top:18px; }
+  .result {
+    background:var(--card); border:1px solid var(--border); border-left:4px solid var(--accent);
+    border-radius:var(--radius); padding:18px 20px; box-shadow:var(--shadow);
+    animation: rise .35s ease both; transition: box-shadow .2s ease, transform .2s ease;
+  }
+  .result:hover { box-shadow:var(--shadow-lg); }
+  @keyframes rise { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  #results[data-subject="physics"] .result { border-left-color: var(--sub-physics); }
+  #results[data-subject="chemistry"] .result { border-left-color: var(--sub-chemistry); }
+  #results[data-subject="biology"] .result { border-left-color: var(--sub-biology); }
+  #results[data-subject="combined_science"] .result { border-left-color: var(--sub-combined_science); }
+
+  .result .meta { font-size:0.78rem; color:var(--muted); margin-bottom:10px; font-weight:600; letter-spacing:.01em; }
+  .result .meta a { color: var(--accent); text-decoration:none; }
+  .result .meta a:hover { text-decoration:underline; }
+  .part { font-size:0.97rem; line-height:1.5; padding:12px 0; border-top:1px dashed var(--border); }
+  .part:first-of-type { border-top:none; padding-top:2px; }
+  .part.matched > .qtext { background: var(--highlight); color:var(--highlight-ink); border-radius:6px; padding:6px 8px; margin: 0 -8px; display:inline-block; }
+  .part .ref {
+    font-weight:700; margin-right:8px; color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, transparent);
+    padding:2px 8px; border-radius:999px; font-size:0.85rem;
+  }
+  .badge { display:inline-block; font-size:0.7rem; font-weight:600; padding:3px 9px; border-radius:999px; margin-left:6px; }
+  .badge.literal { background:#dcfce7; color:#166534; }
+  .badge.expanded { background:#fef3c7; color:#92400e; }
+  .badge.figure { background:#dbeafe; color:#1e40af; }
+  html[data-theme="dark"] .badge.literal { background:rgba(34,197,94,.18); color:#86efac; }
+  html[data-theme="dark"] .badge.expanded { background:rgba(245,158,11,.18); color:#fcd34d; }
+  html[data-theme="dark"] .badge.figure { background:rgba(59,130,246,.18); color:#93c5fd; }
+
+  .ms { background: var(--ms-bg); border:1px solid var(--ms-border); border-radius:10px; padding:10px 12px; margin-top:8px; font-size:0.9rem; }
   .ms.hidden { display:none; }
-  .ms .label { font-weight:600; color:#256029; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em; display:block; margin-bottom:3px; }
-  .ms-toggle { display:inline-block; margin-top:8px; font-size:0.8rem; padding:5px 12px; border:1px solid var(--ms-border); border-radius:6px; background:#fff; color:#256029; cursor:pointer; }
-  .ms-toggle:hover { background:var(--ms-bg); }
-  .figs { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
-  .figs img { max-width:260px; max-height:220px; border:1px solid var(--border); border-radius:6px; background:#fff; object-fit:contain; }
-  .qtable { border-collapse:collapse; margin-top:8px; font-size:0.85rem; }
-  .qtable td { border:1px solid var(--border); padding:4px 8px; }
-  .qtable tr:first-child td { background:#f3f1ec; font-weight:600; }
-  .empty { color: var(--muted); padding: 20px 0; }
+  .ms .label { font-weight:700; color:var(--ms-ink); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:4px; }
+  .ms-toggle {
+    display:inline-flex; align-items:center; gap:6px; margin-top:10px; font-size:0.8rem; font-weight:600;
+    padding:6px 14px; border:1px solid var(--ms-border); border-radius:999px; background:var(--ms-bg);
+    color:var(--ms-ink); cursor:pointer; box-shadow:none;
+  }
+  .ms-toggle:hover { transform:none; box-shadow:none; filter:brightness(0.97); }
+  .figs { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+  .figs img {
+    max-width:260px; max-height:220px; border:1px solid var(--border); border-radius:10px;
+    background:#fff; object-fit:contain; box-shadow:var(--shadow); transition: transform .2s ease;
+  }
+  .figs img:hover { transform: scale(1.03); }
+  .qtable { border-collapse:collapse; margin-top:10px; font-size:0.85rem; border-radius:8px; overflow:hidden; }
+  .qtable td { border:1px solid var(--border); padding:6px 10px; }
+  .qtable tr:first-child td { background:var(--card-2); font-weight:700; }
+  .qtable tr:nth-child(even) td { background:color-mix(in srgb, var(--card-2) 60%, transparent); }
+  .empty {
+    color: var(--muted); padding: 36px 20px; text-align:center; background:var(--card);
+    border:1px dashed var(--border); border-radius:var(--radius);
+  }
   a { color: var(--accent); }
-  button.secondary { background:#fff; color:var(--accent); border:1px solid var(--accent); }
+
   #printArea { display:none; }
   #printArea h1 { font-size:1.3rem; }
   #printArea h2 { font-size:1.1rem; border-top:2px solid var(--ink); padding-top:14px; margin-top:28px; }
@@ -64,26 +171,45 @@
     #printArea, #printArea * { visibility: visible; }
     #printArea { display:block; position:absolute; left:0; top:0; width:100%; }
   }
+  @media (max-width: 600px) {
+    .topbar { flex-direction:column; }
+    select, .search-wrap { width:100%; min-width:0; }
+    .controls { flex-direction:column; align-items:stretch; }
+    button { width:100%; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>AQA GCSE Question Search</h1>
-  <p class="sub">Search real past-paper questions by topic. A match returns the whole question (all sub-parts), and where a mark scheme exists for that paper, the official answer is attached to each part.</p>
-
-  <div class="controls">
-    <select id="subject">
-      <option value="physics">Physics (8463)</option>
-      <option value="chemistry">Chemistry (8462)</option>
-      <option value="biology">Biology (8461)</option>
-      <option value="combined_science">Combined Science: Trilogy (8464)</option>
-    </select>
-    <input id="topic" type="text" placeholder="e.g. osmosis" value="osmosis">
-    <button onclick="runSearch()">Search</button>
-    <button class="secondary" onclick="exportPDF()">Export as PDF (questions + mark scheme)</button>
+  <div class="topbar">
+    <div class="titleblock">
+      <h1>AQA GCSE Question Search</h1>
+      <p class="sub">Search real past-paper questions by topic. A match returns the whole question (all sub-parts), and where a mark scheme exists for that paper, the official answer is attached to each part.</p>
+    </div>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark mode">🌙</button>
   </div>
-  <div class="note" id="corpusNote"></div>
-  <div class="note">Diagrams are cropped straight from the original PDF where one was found for that part. If no image shows but a part mentions a Figure/Table, use "view original PDF" to see it.</div>
+
+  <div class="panel">
+    <div class="controls">
+      <div class="select-wrap">
+        <select id="subject">
+          <option value="physics">Physics (8463)</option>
+          <option value="chemistry">Chemistry (8462)</option>
+          <option value="biology">Biology (8461)</option>
+          <option value="combined_science">Combined Science: Trilogy (8464)</option>
+        </select>
+      </div>
+      <div class="search-wrap">
+        <input id="topic" type="text" placeholder="e.g. osmosis" value="osmosis" onkeydown="if(event.key==='Enter') runSearch()">
+      </div>
+      <button onclick="runSearch()">Search</button>
+      <button class="secondary" onclick="exportPDF()">Export as PDF (questions + mark scheme)</button>
+    </div>
+    <div class="stat-row">
+      <div class="note" id="corpusNote"></div>
+    </div>
+    <div class="note" style="margin-top:4px;">Diagrams are cropped straight from the original PDF where one was found for that part. If no image shows but a part mentions a Figure/Table, use "view original PDF" to see it.</div>
+  </div>
 
   <div id="results"></div>
 </div>
@@ -147,6 +273,7 @@ function runSearch() {
   const queryRaw = document.getElementById('topic').value.trim();
   const resultsEl = document.getElementById('results');
   resultsEl.innerHTML = '';
+  resultsEl.dataset.subject = subject;
   lastResults = [];
   lastMeta = { subject, query: queryRaw };
 
@@ -280,6 +407,25 @@ function exportPDF() {
 
   window.print();
 }
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  try { localStorage.setItem('gcse-theme', theme); } catch (e) {}
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+(function initTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem('gcse-theme'); } catch (e) {}
+  const preferred = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  applyTheme(preferred);
+})();
 
 window.onload = runSearch;
 </script>
